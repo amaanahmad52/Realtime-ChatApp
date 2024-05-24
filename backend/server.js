@@ -5,7 +5,10 @@ app.use(express.json());
 const dotenv=require('dotenv');
 dotenv.config()
 const bodyParser = require('body-parser');
-
+const cors=require('cors');
+app.use(cors(
+    "https://localhost:5000"
+))
 app.use(cookieParser());
 const connect=require("./Datebase")
 connect()

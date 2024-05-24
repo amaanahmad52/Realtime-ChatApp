@@ -13,7 +13,7 @@ exports.isAuthenticated=asynchandler(async(req,res,next)=>{
 
     const decoded =  await jwt.verify(token, process.env.JWT_SECRET);
     const userId=decoded.id
-
+    console.log(userId)
     req.userDetails=await User.findById(userId).select("-password") //so that password na jaaaye
     next()
 })
