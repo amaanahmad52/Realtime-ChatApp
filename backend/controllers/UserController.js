@@ -2,6 +2,7 @@ const express= require('express');
 const User=require("../models/UserModel")
 const asynchandler=require("../utils/asynchandler")
 const dotenv=require('dotenv');
+const getToken = require('../utils/tokenGenerationJWT');
 dotenv.config()
 exports.signup = asynchandler(async(req, res) =>{
     
@@ -16,7 +17,7 @@ exports.signup = asynchandler(async(req, res) =>{
             return res.status(400).json({message:"User already exists"})
         } 
         
-        if(gender==="M"){
+        if(gender==='M'){
             avatar="https://avatar.iran.liara.run/public/boy"
         }
         else{
@@ -29,20 +30,21 @@ exports.signup = asynchandler(async(req, res) =>{
             userName,
             email,
             gender,
-            password,
+            password
             // avatar:req.body.avatar
         })
         // console.log(user)
-        res.status(201).json({
-            user,
-            success: true
-        });
+        // res.status(201).json({
+        //     user,
+        //     success: true
+        // });
+        getToken(user,200,res)
            
 })
 exports.login=asynchandler(async(req,res)=>{
-    const {username,password}=req.body;
+    const {userName,password}=req.body;
 
-    const userfind=await User.findOne({username}).select("+password");
+    const userfind=await User.findOne({userName}).select("+password");
     if(!userfind){
         return res.status(400).json({message:"Bad Credentials"})
     } 
@@ -55,29 +57,32 @@ exports.login=asynchandler(async(req,res)=>{
     
     //now create jwt token
 
-    const token = await userfind.getJWTTOKEN(); //function defined in usermodel
+    getToken(userfind,200,res)
+    // const token = await userfind.getJWTTOKEN(); //function defined in usermodel
  
-    const options = {
+    // const options = {
    
-    expires: new Date(Date.now() + 86400000),
-      httpOnly: true,
-      secure: process.env.NODE_ENV!=="developement" 
-    };
+    // expires: new Date(Date.now() + 86400000),
+    //   httpOnly: true,
+    //   secure: process.env.NODE_ENV!=="developement" 
+    // };
     
                                 
     
-    return res.status(200).cookie("token", token, options).json({  //express method to set cookie res.cookie
-      success: true,
-      userfind,
-      token
-    })
+    // return res.status(200).cookie("token", token, options).json({  //express method to set cookie res.cookie
+    //   success: true,
+    //   userfind,
+    //   token
+    // })
 })
 
 exports.logout=asynchandler(async(req,res)=>{
-    res.cookie("token",null,{   
+    await res.cookie("token",null,{   
         expires:new Date(Date.now()),
-        httpOnly:true
+        httpOnly:true,
+    //   secure: process.env.NODE_ENV!=="developement"
     })
+    // console.log(new Date(Date.now()))
     res.status(200).json({ message: 'Logged out successfully' });
 })
     
@@ -92,12 +97,25 @@ exports.getAllUsers=asynchandler(async(req,res)=>{
     if(!users){
         res.status(404).json([])
     }
-
+    // console.log("hi")
     res.status(200).json({
         success: true,
         users
     })
 })
 
-
+//to get my details
+exports.getMyDetails=asynchandler(async(req,res)=>{
+    if (!req.userDetails) { //auth file seayega
+        return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    const id=req.userDetails._id  //here we saved
+    // console.log(id);
+    const user = await User.findById(id);
+    
+    res.status(200).json({
+      user
+    });
+    
+})
    

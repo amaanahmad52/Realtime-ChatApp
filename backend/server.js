@@ -4,12 +4,18 @@ const app = express(); //will allow to extract req.body objects
 app.use(express.json());
 const dotenv=require('dotenv');
 dotenv.config()
-const bodyParser = require('body-parser');
-const cors=require('cors');
-app.use(cors(
-    "https://localhost:5000"
-))
 app.use(cookieParser());
+const bodyParser = require('body-parser');
+
+
+const cors=require('cors');
+app.use(cors({
+    origin:"http://localhost:3000",
+    credentials:true
+}));
+
+
+
 const connect=require("./Datebase")
 connect()
 //middleware mounting

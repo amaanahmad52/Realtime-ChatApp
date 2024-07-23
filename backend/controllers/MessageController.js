@@ -56,29 +56,40 @@ exports.getMessages=asynchandler(async(req,res)=>{
     
     const receiver=req.params.id;
     const sender=req.userDetails._id
-
+    // console.log(receiver);
+    // console.log(sender);
     const baatein=await Conversation.findOne({
         participants:{$all: [sender,receiver]} //from all the available docs find all conversed message of given users
     }).populate("messages")
     //populate se ye hoga ki, humko ab message id nhi milegi balki direct messages mil jeage iss corresponding message id ke jo Message schema pe hai
 
+    let chatHistory=[];
 
     // console.log(baatein);
     if(!baatein){
-        res.status(400).json([])
+        res.status(200).json({
+            success: false,
+            chatHistory
+        })
     }
 
     //from conversation model we will get all the messages ids of the corresponding sender and receiver
     //now in messagew model we need to fnd all those  docs which have these msg id 
 
-    let chatHistory=[];
 
-    baatein.messages.forEach(async (id)=>(
-       chatHistory.push(id.message)
-    ))
-
+    // baatein.messages.forEach(async (id)=>(
+    //    chatHistory.push(id.message)
+    // ))
+    for (const id of baatein.messages) {
+        chatHistory.push({
+            sender: id.sender,
+            receiver: id.receiver,
+            createdAt: id.createdAt,
+            message: id.message
+        });
+    }
     res.status(200).json({
-        success: true,
+        // success: true,
         chatHistory   //will have all the converations messaeg
     })
 
